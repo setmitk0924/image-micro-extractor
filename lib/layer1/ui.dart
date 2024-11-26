@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../layer2/image_processing.dart';
 import '../layer3/communication.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class ImageSelectorWidget extends StatefulWidget {
   @override
@@ -30,19 +31,23 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
       if (result != null) {
         final file = result.files.single;
         
-        if (file.bytes != null) {
-          setState(() {
-            _imageData = file.bytes!;
-            print('Selected image data length: ${_imageData!.length}');
-          });
-          
-          // Process image and get results
-          final processedData = await ImageProcessing.extractPixelData(_imageData!);
-          setState(() {
-            _extractedPixelData = processedData.extractedPixelData;
-            _macroBlockData = processedData.macroBlockData;
-          });
-        }
+        final bytes = file.bytes!;
+        setState(() {
+          _imageData = bytes;
+          print('Selected image data length: ${_imageData!.length}');
+        });
+        
+        // Process image and get results
+        final processedData = await ImageProcessing.extractPixelData(_imageData!);
+        setState(() {
+          _extractedPixelData = processedData.extractedPixelData;
+          _macroBlockData = processedData.macroBlockData;
+          _compressionStats = CommunicationLayer.getMetadata();
+          print('Extracted pixel data length: ${_extractedPixelData?.length}');
+          print('Macro block data length: ${_macroBlockData?.length}');
+        });
+        
+        ImageProcessing.processImage(file.name);
       }
     } catch (e) {
       setState(() {
