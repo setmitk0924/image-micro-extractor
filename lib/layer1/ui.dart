@@ -1,4 +1,3 @@
-import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -30,37 +29,20 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
       
       if (result != null) {
         final file = result.files.single;
-
-        // Create a Blob from the file bytes
-        final blob = html.Blob([file.bytes!]);
-        final reader = html.FileReader();
         
-        reader.readAsArrayBuffer(blob);
-        reader.onLoadEnd.listen((e) async {
-          try {
-            setState(() {
-              _imageData = reader.result as Uint8List;
-              print('Selected image data length: ${_imageData!.length}');
-            });
-            
-            // Process image and get results
-            final processedData = await ImageProcessing.extractPixelData(_imageData!);
-            setState(() {
-              _extractedPixelData = processedData.extractedPixelData;
-              _macroBlockData = processedData.macroBlockData;
-              _compressionStats = CommunicationLayer.getMetadata();
-              print('Extracted pixel data length: ${_extractedPixelData?.length}');
-              print('Macro block data length: ${_macroBlockData?.length}');
-            });
-          } catch (e) {
-            setState(() {
-              _errorMessage = 'Failed to process image: ${e.toString()}';
-              print(_errorMessage);
-            });
-          }
-        });
-        
-        ImageProcessing.processImage(file.name);
+        if (file.bytes != null) {
+          setState(() {
+            _imageData = file.bytes!;
+            print('Selected image data length: ${_imageData!.length}');
+          });
+          
+          // Process image and get results
+          final processedData = await ImageProcessing.extractPixelData(_imageData!);
+          setState(() {
+            _extractedPixelData = processedData.extractedPixelData;
+            _macroBlockData = processedData.macroBlockData;
+          });
+        }
       }
     } catch (e) {
       setState(() {
